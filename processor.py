@@ -4,8 +4,8 @@ import numpy as np
 class ImageProcessor:
     def __init__(self, aruco_type=cv2.aruco.DICT_5X5_1000, real_width=5.0):
         #region - Image Processing Parameters
-        self.threshold_min = 50
-        self.threshold_max = 150
+        self.threshold_min = 30
+        self.threshold_max = 100
         self.blur_kernel = (7, 7)
         self.morph_kernel = np.ones((5, 5), np.uint8)
         #endregion
@@ -19,6 +19,16 @@ class ImageProcessor:
         #endregion
 
     def process_frame(self, frame):
+        #region - Digital Zoom (Crop)
+        h, w, _ = frame.shape
+        start_row = int(h * 0.20)
+        end_row = int(h * 0.80)
+        start_col = int(w * 0.20)
+        end_col = int(w * 0.80)
+
+        frame = frame[start_row:end_row, start_col:end_col]
+        #endregion
+
         input_frame = frame.copy()
 
         gray = cv2.cvtColor(input_frame, cv2.COLOR_BGR2GRAY)
@@ -45,8 +55,8 @@ class ImageProcessor:
         blurred = cv2.GaussianBlur(gray, self.blur_kernel, 0)
         edged = cv2.Canny(blurred, self.threshold_min, self.threshold_max)
 
-        dilated = cv2.dilate(edged, self.morph_kernel, iterations=3)
-        cleaned = cv2.erode(dilated, self.morph_kernel, iterations=3)
+        dilated = cv2.dilate(edged, self.morph_kernel, iterations=5)
+        cleaned = cv2.erode(dilated, self.morph_kernel, iterations=5)
         #endregion
 
         #region - Detection and Measurement
