@@ -11,8 +11,6 @@ class AppGui:
         self.video_label = tk.Label(root)
         self.video_label.pack()
 
-        self.btn_quit = ttk.Button(root, text="Quit", command=root.quit)
-        self.btn_quit.pack(pady=10)
 
     def update_image(self, cv_image):
         rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
