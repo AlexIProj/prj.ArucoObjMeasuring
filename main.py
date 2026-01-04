@@ -16,7 +16,8 @@ class MainApp:
         ret, frame = self.cap.read()
 
         if ret:
-            processed_frame = self.processor.process_frame(frame)
+            current_crop = self.gui.scale_crop.get()
+            processed_frame = self.processor.process_frame(frame, crop_margin=current_crop)
             self.gui.update_image(processed_frame)
 
         self.root.after(10, self.video_loop)
