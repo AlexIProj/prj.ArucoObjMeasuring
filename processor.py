@@ -21,7 +21,7 @@ class ImageProcessor:
 
         self.rect_history = deque(maxlen=15)
 
-    def process_frame(self, frame, crop_margin=0.2, enable_stab=True, stab_depth=15):
+    def process_frame(self, frame, crop_margin=0.2, enable_stab=True, stab_depth=15, draw_measurement=True):
         if self.rect_history.maxlen != stab_depth:
             self.rect_history = deque(maxlen=stab_depth)
 
@@ -33,7 +33,7 @@ class ImageProcessor:
 
         #region - ArUco Detection
         corners, ids, rejected = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
-        if ids is not None:
+        if draw_measurement and ids is not None:
             cv2.aruco.drawDetectedMarkers(input_frame, corners, ids)
 
             aruco_perimeter_px = cv2.arcLength(corners[0], True)
@@ -44,7 +44,7 @@ class ImageProcessor:
             text = f"Scara: {self.pixel_per_cm:.1f} px/cm"
             cv2.putText(input_frame, text, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             #endregion
-        else:
+        elif draw_measurement is not None and ids is None:
             self.pixel_per_cm = 0
             cv2.putText(input_frame, "ArUco missing", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         #endregion
@@ -93,7 +93,7 @@ class ImageProcessor:
         #endregion
 
         #region - Drawing and Measurement
-        if final_rect is not None:
+        if draw_measurement and final_rect is not None:
             (cx, cy), (w, h), ang = final_rect
 
             raw_width =  w / self.pixel_per_cm

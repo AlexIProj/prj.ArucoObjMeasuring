@@ -61,10 +61,12 @@ class MainApp:
             stab_enabled = self.gui.var_stab_enable.get()
             stab_depth = self.gui.var_stab_depth.get()
 
+            show_measure = self.gui.var_show_measure.get()
             processed_frame = self.processor.process_frame(frame,
                                                            crop_margin=current_crop,
                                                            enable_stab=stab_enabled,
-                                                           stab_depth=stab_depth
+                                                           stab_depth=stab_depth,
+                                                           draw_measurement=show_measure
                                                            )
             self.gui.update_image(processed_frame)
         else:

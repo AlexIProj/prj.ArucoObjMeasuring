@@ -20,6 +20,7 @@ class AppGui:
         self.var_camera_index = tk.IntVar(value=0)
         self.var_crop = tk.DoubleVar(value=0.2)
         self.cbk_toggle_cam = None
+        self.var_show_measure = tk.BooleanVar(value=True)
         #endregion
 
         self.setup_ui()
@@ -71,6 +72,14 @@ class AppGui:
         tk.Label(container_stabilisation,text="FramesNo: ").pack(side="left", padx=(10, 2))
         spin_frame = ttk.Spinbox(container_stabilisation, from_=1, to=50, width=3, textvariable=self.var_stab_depth)
         spin_frame.pack(side="left")
+        #endregion
+
+        #region - Measurement View Control
+        container_view = tk.LabelFrame(container_control, text="View", padx=5, pady=5)
+        container_view.pack(side="left")
+
+        chk_measure = ttk.Checkbutton(container_view, text="Show Measure", variable=self.var_show_measure)
+        chk_measure.pack(side="left", padx=5)
         #endregion
 
     def update_image(self, cv_image):
