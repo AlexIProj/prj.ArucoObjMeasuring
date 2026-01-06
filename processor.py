@@ -5,8 +5,8 @@ from collections import deque
 class ImageProcessor:
     def __init__(self, aruco_type=cv2.aruco.DICT_5X5_1000, real_width=5.0):
         #region - Image Processing Parameters
-        self.threshold_min = 30
-        self.threshold_max = 100
+        self.threshold_min = 10
+        self.threshold_max = 60
         self.blur_kernel = (7, 7)
         self.morph_kernel = np.ones((5, 5), np.uint8)
         #endregion
@@ -33,28 +33,28 @@ class ImageProcessor:
 
         #region - ArUco Detection
         corners, ids, rejected = cv2.aruco.detectMarkers(gray, self.aruco_dict, parameters=self.aruco_params)
-        if draw_measurement and ids is not None:
-            cv2.aruco.drawDetectedMarkers(input_frame, corners, ids)
+        if ids is not None:
 
             aruco_perimeter_px = cv2.arcLength(corners[0], True)
             avg_side_px = aruco_perimeter_px / 4.0
             self.pixel_per_cm = avg_side_px / self.marker_real_width_cm
 
-            #region - Debug ArUco
-            text = f"Scara: {self.pixel_per_cm:.1f} px/cm"
-            cv2.putText(input_frame, text, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            #endregion
-        elif draw_measurement is not None and ids is None:
+            if draw_measurement:
+                cv2.aruco.drawDetectedMarkers(input_frame, corners, ids)
+                text = f"Scara: {self.pixel_per_cm:.1f} px/cm"
+                cv2.putText(input_frame, text, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        else:
             self.pixel_per_cm = 0
-            cv2.putText(input_frame, "ArUco missing", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            if draw_measurement:
+                cv2.putText(input_frame, "ArUco missing", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         #endregion
 
         #region - Image Processing
         blurred = cv2.GaussianBlur(gray, self.blur_kernel, 0)
         edged = cv2.Canny(blurred, self.threshold_min, self.threshold_max)
 
-        dilated = cv2.dilate(edged, self.morph_kernel, iterations=5)
-        cleaned = cv2.erode(dilated, self.morph_kernel, iterations=5)
+        dilated = cv2.dilate(edged, self.morph_kernel, iterations=3)
+        cleaned = cv2.erode(dilated, self.morph_kernel, iterations=2)
         #endregion
 
         #region - Detection
@@ -63,7 +63,7 @@ class ImageProcessor:
             contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours = sorted(contours, key=cv2.contourArea, reverse=True)
             for cnt in contours:
-                if cv2.contourArea(cnt) < 2000:
+                if cv2.contourArea(cnt) < 1000:
                     continue
                 current_rect = cv2.minAreaRect(cnt)
                 break
