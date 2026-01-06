@@ -113,8 +113,17 @@ class ImageProcessor:
         #endregion
 
         edged_bgr = cv2.cvtColor(cleaned, cv2.COLOR_GRAY2BGR)
+        gray_bgr = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
         separator = np.ones((input_frame.shape[0], 5, 3), dtype=np.uint8) * 255
-        combined_view =np.hstack((input_frame, separator, edged_bgr))
+        big_view = np.hstack((input_frame, separator, edged_bgr, separator, gray_bgr))
+
+        target_width = 3440
+
+        h, w = big_view.shape[:2]
+        scale_factor = target_width / w
+        new_h = int(h * scale_factor)
+
+        combined_view = cv2.resize(big_view, (target_width, new_h), interpolation=cv2.INTER_AREA)
 
         return combined_view
 
